@@ -1,11 +1,15 @@
 FROM mautic/mautic:5-apache
 
-# Fix Apache MPM conflict: remove conflicting MPM symlinks directly
-RUN rm -f /etc/apache2/mods-enabled/mpm_event.load \
-          /etc/apache2/mods-enabled/mpm_event.conf \
-          /etc/apache2/mods-enabled/mpm_worker.load \
-          /etc/apache2/mods-enabled/mpm_worker.conf && \
+# Fix Apache MPM conflict at build time
+RUN rm -f /etc/apache2/mods-enabled/mpm_event.* \
+          /etc/apache2/mods-enabled/mpm_worker.* && \
     a2enmod mpm_prefork 2>/dev/null || true
+
+# Fix Apache MPM conflict at runtime via custom entrypoint wrapper
+COPY custom-entrypoint.sh /custom-entrypoint.sh
+RUN chmod +x /custom-entrypoint.sh
+ENTRYPOINT ["/custom-entrypoint.sh"]
+CMD ["apache"]
 
 ARG MAUTIC_DB_HOST
 ARG MAUTIC_DB_USER
