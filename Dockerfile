@@ -1,5 +1,8 @@
 FROM mautic/mautic:5-apache
 
+# Fix Apache MPM conflict: disable mpm_event and enable mpm_prefork
+RUN a2dismod mpm_event mpm_worker 2>/dev/null || true && a2enmod mpm_prefork
+
 ARG MAUTIC_DB_HOST
 ARG MAUTIC_DB_USER
 ARG MAUTIC_DB_PASSWORD
