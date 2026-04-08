@@ -1,7 +1,11 @@
 FROM mautic/mautic:5-apache
 
-# Fix Apache MPM conflict: disable mpm_event and enable mpm_prefork
-RUN a2dismod mpm_event mpm_worker 2>/dev/null || true && a2enmod mpm_prefork
+# Fix Apache MPM conflict: remove conflicting MPM symlinks directly
+RUN rm -f /etc/apache2/mods-enabled/mpm_event.load \
+          /etc/apache2/mods-enabled/mpm_event.conf \
+          /etc/apache2/mods-enabled/mpm_worker.load \
+          /etc/apache2/mods-enabled/mpm_worker.conf && \
+    a2enmod mpm_prefork 2>/dev/null || true
 
 ARG MAUTIC_DB_HOST
 ARG MAUTIC_DB_USER
